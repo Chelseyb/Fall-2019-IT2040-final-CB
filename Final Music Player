@@ -1,0 +1,322 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace musicplayer
+{
+    class Program
+    {
+
+        static void Main(string[] args)
+        {
+
+            Console.WriteLine("Music Playlist Analyzer");
+            Console.WriteLine("________________________");
+            Console.WriteLine("");
+            Console.WriteLine("");
+            //Requirement: if there are not args then tell the user how to start the program 
+            if (args.Length == 0 || args.Length == 1)
+            {
+                Console.WriteLine("Error: Plese enter Plese enter arguments to query (MusicPlaylistAnalyzer <music_playlist_file_path> <report_file_path>)");
+            }
+            //run with below IN DEBUG
+            //musicdata.txt =file with data to query (arg[0])
+            //music.txt = file with linq statements to go in (args[1])
+
+
+            string reportname = args[0];
+            string report = args[1];
+
+            List<music> musicdata = null;
+
+            //send the file
+            //have to catch keep getting file not found -fixed it by putting the file in core3.1 INSTEAD of just bin 
+            try
+            {
+                musicdata = Getmusic.Link(reportname);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("File open error");
+               
+            }
+
+            //parcing
+            var data = linqstatements.Linqs(musicdata);
+            try
+            {
+
+
+                System.IO.File.WriteAllText(report, data);
+            }
+
+            catch (Exception e)
+            {
+                Console.WriteLine("Report writing error");
+
+            }
+
+
+        }
+
+
+    }
+
+
+}
+
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+
+
+namespace musicplayer
+{
+    public class Getmusic
+    {
+       
+            public static List<music> Link(string reportname)
+            {
+                List<music> musicdata = new List<music>();
+
+
+
+                using (var readlines = new StreamReader(reportname))
+                {
+
+
+                //need to ignore the first line but use the titles for the classes
+                int lines = 0;
+                   
+                    while (!readlines.EndOfStream)
+                    {
+                    var line = readlines.ReadLine();
+                    lines++;
+                    //same as comma lab but use \t
+                    if (lines  == 1) continue;
+                    var values = line.Split('\t');
+
+                    //titles are (these are in order): name, artist, album, genre, size, title, year, plays)
+
+                        string name = values[0];
+                        string artist = values[1];
+                        string album = values[2];
+                        string genre = values[3];
+                        int size = int.Parse(values[4]);
+                        int time = int.Parse(values[5]);
+                        int year = int.Parse(values[6]);
+                        int plays = int.Parse(values[7]);
+
+                        music musiclist = new music(name, artist, album, genre, size, time, year, plays);
+                        musicdata.Add(musiclist);
+                    }
+                }
+        
+
+        //connect to main music or repname -musicdata works
+
+          return musicdata;
+
+        }
+      
+    }
+}
+
+
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+
+namespace musicplayer
+{
+    public class linqstatements
+    {
+        
+            public static string Linqs(List<music> musicdata)
+            {
+            //Qustion 1: How many songs received 200 or more plays?
+
+            Console.WriteLine("Songs with more than 200 plays");
+            Console.WriteLine("________________________");
+            string write = "Linq Statements";
+            var numplays = from musiclist in musicdata where musiclist.Plays > 199 select musiclist;
+            if (numplays.Count() > 0)
+            {
+                foreach (music musiclist in numplays)
+                {
+                    Console.WriteLine(musiclist + "\n");
+                }
+              
+            }
+
+                 Console.WriteLine("");
+
+
+            //Question 2: How many songs are in the playlist with the Genre of “Alternative”?
+            Console.WriteLine("Songs from the Alternative playlist");
+            Console.WriteLine("________________________");
+
+            var altgenre = from musiclist in musicdata where musiclist.Genre == "Alternative" select musiclist;
+            if (altgenre.Count() > 0)
+            {
+                foreach (music musiclist in altgenre)
+                {
+                    Console.WriteLine(musiclist + "\n");
+                }
+
+            }
+
+            Console.WriteLine("");
+
+
+
+
+            //Qustion 3: How many songs are in the playlist with the Genre of “Hip - Hop / Rap”?
+            //in the data it reads EXACTLYY AS: Hip Hop/Rap 
+            Console.WriteLine("Songs in the Hip-Hop/Rap Genre");
+            //There should be 19 
+
+            Console.WriteLine("_________________________________");
+            var hiphop = from musiclist in musicdata where musiclist.Genre == "Hip Hop/Rap" select musiclist;
+            if (hiphop.Count() > 0)
+            {
+                foreach (music musiclist in hiphop)
+                {
+
+                    int counting = hiphop.Count();
+                   Console.WriteLine(counting);
+
+                }
+            }
+
+            Console.WriteLine(""); 
+
+            //Question 4: What songs are in the playlist from the ALBUM (did not work b/c song!!) “Welcome to the Fishbowl?”--there should only be one- no there are 3 in the data
+    
+            Console.WriteLine("Songs from the Welcome to the Fishbowl album");
+            Console.WriteLine("________________________");
+
+            var fishbowl = from musiclist in musicdata where musiclist.Album  == "Welcome to the Fishbowl" select musiclist;
+            if (fishbowl.Count() > 0)
+            {
+                foreach (music musiclist in fishbowl)
+                {
+    
+                    
+                    Console.WriteLine(musiclist);
+
+                }
+            }
+
+            Console.WriteLine("");
+          
+
+            //Qustion 5: What are the songs in the playlist from before 1970 ?
+            //label is year
+      
+            Console.WriteLine("Songs from before 1970");
+            Console.WriteLine("________________________");
+            var before70 = from musiclist in musicdata where musiclist.Year < 1970 select musiclist;
+            if (before70.Count() > 0)
+            {
+                foreach (music musiclist in before70)
+                {
+                    Console.WriteLine(musiclist + "\n");
+                }
+
+            }
+
+           
+            Console.WriteLine("");
+
+            //Question 6: What are the song names that are MORE than 85 characters long      
+            Console.WriteLine("Song names longer than 85 characters");
+            Console.WriteLine("________________________");
+
+            var longchar = from musiclist in musicdata where (musiclist.Name).Count() > 85 select musiclist;
+            if (longchar.Count() > 0)
+            {
+                foreach (music musiclist in longchar)
+                {
+                    Console.WriteLine(musiclist + "\n");
+                }
+
+            }
+
+            Console.WriteLine("");
+
+            //Question 7: What is the longest song ? (longest in Time NOT SIZE) 
+            Console.WriteLine("Song with the longest length");
+            Console.WriteLine("________________________");
+            var longtime = from musiclist in musicdata where (musiclist.Time) == 482 select  musiclist;
+            if (longtime.Count() > 0)
+            {
+                foreach (music musiclist in longtime)
+                {
+                    Console.WriteLine(musiclist + "\n");
+                }
+
+            }
+
+            Console.WriteLine("");
+          
+
+            return write;
+        }
+    }
+}
+
+
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace musicplayer
+{
+    public class music
+    {
+        //try captial here and lower in get class -works
+        public string Name;
+        public string Artist;
+        public string Album;
+        public string Genre;
+        public int Size;
+        public int Time;
+        public int Year;
+        public int Plays;
+
+        //need constr.
+     public music(string name, string artist, string album, string genre, int size, int time, int year, int plays ){
+
+            //connect cap and lower 
+            Name = name;
+            Artist = artist;
+            Album = album;
+            Genre = genre;
+            Size = size;
+            Time = time;
+            Year = year;
+            Plays = plays;
+        }
+
+        //overide fuction from instructions?-works
+        override public string ToString()
+        {
+            return String.Format("Name: {0}, Artist: {1}, Album: {2}, Genre: {3}, Size: {4}, Time: {5}, Year: {6}, Plays: {7}", Name, Artist, Album, Genre, Size, Time, Year, Plays);
+        }
+
+
+    }
+}
